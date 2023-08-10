@@ -39,6 +39,8 @@ public class Chassis extends SubsystemBase {
 
     public void setVelocity(double l, double r) {
         // input in meter per seconds
+        left.setIntegralAccumulator(0);
+        right.setIntegralAccumulator(0);
         left.set(ControlMode.Velocity, VelocityToTalonVelocity(l));
         right.set(ControlMode.Velocity, VelocityToTalonVelocity(r));
     }
