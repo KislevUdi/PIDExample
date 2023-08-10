@@ -27,9 +27,12 @@ public final class Constants {
     public static final double PulsePerRotation = 2048;
     public static final double PulsePerMeter = (1/WheelCircumference)*GearRatio*PulsePerRotation;
 
-    public static final double VelocityKP = 0.1;
-    public static final double VelocityKI = 0.01;
+    public static final double VelocityKP = 0.05;
+    public static final double VelocityKI = 0.005;
     public static final double VelocityKD = 0;
+
+    public static final double VelocityKV = 0.25;
+    public static final double VelocityKS = 0.07;
 
     public static final String AutoVelocityID = "Auto Velocity";
 

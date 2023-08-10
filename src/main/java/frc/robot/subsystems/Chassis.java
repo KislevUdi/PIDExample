@@ -121,5 +121,9 @@ public class Chassis extends SubsystemBase {
         }
     }
 
+    public double feedForward(double velocity) {
+        return VelocityKS + VelocityKV * velocity;
+    }
+
 
 }
