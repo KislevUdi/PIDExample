@@ -18,9 +18,7 @@ public class Chassis extends SubsystemBase {
 
     TalonFX left;  // shortcut for leftMotors[0]
     TalonFX right;
-    ArrayList<TalonFX> motors = new ArrayList<>();
-    double leftPower;
-    double rightPower;
+    ArrayList<TalonFX> motors = new ArrayList<>(4);
     boolean brake;
     RobotContainer container; // for future use
 
@@ -63,8 +61,6 @@ public class Chassis extends SubsystemBase {
     public void setPower(double l, double r) {
         left.set(ControlMode.PercentOutput, l);
         right.set(ControlMode.PercentOutput, r);
-        leftPower = l;
-        rightPower = r;
     }
 
     public void setVelocity(double l, double r) {
@@ -118,15 +114,15 @@ public class Chassis extends SubsystemBase {
     public double getVelocity() {
         return (getLeftVelocity() + getRightVelocity())/2;
     }
-    public double getLeftPower() {
-        return leftPower;
-    }
-    public double getRightPower() {
-        return rightPower;
-    }
-
     public boolean brakeMode() {
         return brake;
+    }
+
+    public double getLeftPower() {
+        return left.getMotorOutputPercent();
+    }
+    public double getRightPower() {
+        return right.getMotorOutputPercent();
     }
 
     @Override
