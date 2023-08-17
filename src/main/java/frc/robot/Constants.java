@@ -14,24 +14,34 @@ import java.lang.Math;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static final double CycleTime = 0.02;
+
   public static class ChassisConstants {
     public static final int LeftFrontMotor = 1;
-    public static final int LeftBackMotor = 1;
-    public static final int RightFrontMotor = 1;
-    public static final int RightBackMotor = 1;
+    public static final int LeftBackMotor = 2;
+    public static final int RightFrontMotor = 3;
+    public static final int RightBackMotor = 4;
     public static final boolean LeftInverted = true;
     public static final boolean RightInverted = false;
 
-    public static final double WheelCircumference = 4 * 0.0254 * Math.PI; // 4 Inch wheels
-    public static final double GearRatio = 8.14;
+    public static final double WheelCircumference = 6 * 0.0254 * Math.PI; // 4 Inch wheels
+    public static final double GearRatio = 12;
     public static final double PulsePerRotation = 2048;
     public static final double PulsePerMeter = (1/WheelCircumference)*GearRatio*PulsePerRotation;
 
-    public static final double VelocityKP = 0.1;
-    public static final double VelocityKI = 0.01;
+    public static final double VelocityKP = 0.005;
+    public static final double VelocityKI = 0.0001;
     public static final double VelocityKD = 0;
 
     public static final String AutoVelocityID = "Auto Velocity";
+
+    public static final double MaxVelocity = 2.1; 
+    public static final double MaxAcceleration = 1.0;
+
+    public static final double VelocityKS = 0.07;
+    public static final double VelocityKV = 0.2;
+    public static final double VelocityKA = 0.06;
 
   }
   public static class OperatorConstants {

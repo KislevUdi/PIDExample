@@ -1,30 +1,44 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.ChassisConstants.*;
+
+import java.util.ArrayList;
+
 import frc.robot.RobotContainer;
 
 public class Chassis extends SubsystemBase {
 
     TalonFX left;  // shortcut for leftMotors[0]
     TalonFX right;
+    ArrayList<TalonFX> motors = new ArrayList<>();
+    double leftPower;
+    double rightPower;
+    boolean brake;
     RobotContainer container; // for future use
 
     public Chassis(RobotContainer container) {
+        super();
         this.container = container;
         left = initMotors(LeftFrontMotor, LeftBackMotor, LeftInverted);
         right = initMotors(RightFrontMotor, RightBackMotor, RightInverted);
+        setCoast();
+        SmartDashboard.putData("Chassis", this);
     }
 
     // Init motors for one side
     private TalonFX initMotors(int main, int follower, boolean invert) {
         TalonFX m = new TalonFX(main);
         TalonFX f = new TalonFX(follower);
+        motors.add(m);
+        motors.add(f);
         m.setInverted(invert);
         f.setInverted(invert);
         f.follow(m);
@@ -32,9 +46,25 @@ public class Chassis extends SubsystemBase {
         return m;
     }
 
+    public void setBrake() {
+        brake = true;
+        for(TalonFX motor: motors) {
+            motor.setNeutralMode(NeutralMode.Brake);
+        }
+    }
+
+    public void setCoast() {
+        brake = false;
+        for(TalonFX motor: motors) {
+            motor.setNeutralMode(NeutralMode.Coast);
+        }
+    }
+
     public void setPower(double l, double r) {
         left.set(ControlMode.PercentOutput, l);
         right.set(ControlMode.PercentOutput, r);
+        leftPower = l;
+        rightPower = r;
     }
 
     public void setVelocity(double l, double r) {
@@ -88,6 +118,16 @@ public class Chassis extends SubsystemBase {
     public double getVelocity() {
         return (getLeftVelocity() + getRightVelocity())/2;
     }
+    public double getLeftPower() {
+        return leftPower;
+    }
+    public double getRightPower() {
+        return rightPower;
+    }
+
+    public boolean brakeMode() {
+        return brake;
+    }
 
     @Override
     public void initSendable(SendableBuilder builder) {
@@ -98,9 +138,12 @@ public class Chassis extends SubsystemBase {
         builder.addDoubleProperty("Left Velocity", this::getLeftVelocity, null);
         builder.addDoubleProperty("Right Velocity", this::getRightVelocity, null);
         builder.addDoubleProperty("Velocity", this::getLeftVelocity, null);
+        builder.addBooleanProperty("Brake", this::brakeMode, null);
         SmartDashboard.putNumber("Velocity KP", VelocityKP);
         SmartDashboard.putNumber("Velocity KD", VelocityKD);
         SmartDashboard.putNumber("Velocity KI", VelocityKI);
+        SmartDashboard.putData("Brake", new InstantCommand(()->setBrake(),this).ignoringDisable(true));
+        SmartDashboard.putData("Coast", new InstantCommand(()->setCoast(),this).ignoringDisable(true));
         addNTField(AutoVelocityID, 1);
     }
 
