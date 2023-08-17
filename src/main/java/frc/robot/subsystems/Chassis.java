@@ -16,7 +16,7 @@ import frc.robot.RobotContainer;
 
 public class Chassis extends SubsystemBase {
 
-    TalonFX left;  // shortcut for leftMotors[0]
+    TalonFX left; // shortcut for leftMotors[0]
     TalonFX right;
     ArrayList<TalonFX> motors = new ArrayList<>(4);
     boolean brake;
@@ -40,20 +40,20 @@ public class Chassis extends SubsystemBase {
         m.setInverted(invert);
         f.setInverted(invert);
         f.follow(m);
-        setPID(m, VelocityKP, VelocityKI,VelocityKD);
+        setPID(m, VelocityKP, VelocityKI, VelocityKD);
         return m;
     }
 
     public void setBrake() {
         brake = true;
-        for(TalonFX motor: motors) {
+        for (TalonFX motor : motors) {
             motor.setNeutralMode(NeutralMode.Brake);
         }
     }
 
     public void setCoast() {
         brake = false;
-        for(TalonFX motor: motors) {
+        for (TalonFX motor : motors) {
             motor.setNeutralMode(NeutralMode.Coast);
         }
     }
@@ -70,15 +70,16 @@ public class Chassis extends SubsystemBase {
         left.set(ControlMode.Velocity, VelocityToTalonVelocity(l));
         right.set(ControlMode.Velocity, VelocityToTalonVelocity(r));
     }
+
     public void setVelocity(double v) {
         setVelocity(v, v);
     }
-    
+
     public void stop() {
-        setPower(0,0);
+        setPower(0, 0);
     }
 
-    private void setPID(TalonFX motor,double kp, double ki, double kd ) {
+    private void setPID(TalonFX motor, double kp, double ki, double kd) {
         motor.config_kP(0, kp);
         motor.config_kI(0, ki);
         motor.config_kD(0, kd);
@@ -97,23 +98,29 @@ public class Chassis extends SubsystemBase {
 
     // get functions
     public double getLeftDistance() {
-        return left.getSelectedSensorPosition()/PulsePerMeter;
+        return left.getSelectedSensorPosition() / PulsePerMeter;
     }
+
     public double getRightDistance() {
-        return right.getSelectedSensorPosition()/PulsePerMeter;
+        return right.getSelectedSensorPosition() / PulsePerMeter;
     }
+
     public double getDistance() {
-        return (getLeftDistance() + getRightDistance())/2;
+        return (getLeftDistance() + getRightDistance()) / 2;
     }
+
     public double getLeftVelocity() {
         return TalonVelocityToVelocity(left.getSelectedSensorVelocity());
     }
+
     public double getRightVelocity() {
         return TalonVelocityToVelocity(right.getSelectedSensorVelocity());
     }
+
     public double getVelocity() {
-        return (getLeftVelocity() + getRightVelocity())/2;
+        return (getLeftVelocity() + getRightVelocity()) / 2;
     }
+
     public boolean brakeMode() {
         return brake;
     }
@@ -121,6 +128,7 @@ public class Chassis extends SubsystemBase {
     public double getLeftPower() {
         return left.getMotorOutputPercent();
     }
+
     public double getRightPower() {
         return right.getMotorOutputPercent();
     }
@@ -138,27 +146,25 @@ public class Chassis extends SubsystemBase {
         SmartDashboard.putNumber("Velocity KP", VelocityKP);
         SmartDashboard.putNumber("Velocity KD", VelocityKD);
         SmartDashboard.putNumber("Velocity KI", VelocityKI);
-        SmartDashboard.putData("Brake", new InstantCommand(()->setBrake(),this).ignoringDisable(true));
-        SmartDashboard.putData("Coast", new InstantCommand(()->setCoast(),this).ignoringDisable(true));
+        SmartDashboard.putData("Brake", new InstantCommand(() -> setBrake(), this).ignoringDisable(true));
+        SmartDashboard.putData("Coast", new InstantCommand(() -> setCoast(), this).ignoringDisable(true));
         addNTField(AutoVelocityID, 1);
     }
-
 
     // utilities
     public static double TalonVelocityToVelocity(double v) {
         return v * 10 / PulsePerMeter;
     }
-    
+
     public static double VelocityToTalonVelocity(double v) {
         return v * PulsePerMeter / 10;
     }
 
     // add network table field
     private void addNTField(String name, double def) {
-        if(SmartDashboard.getNumber(name, -1) == -1) {
+        if (SmartDashboard.getNumber(name, -1) == -1) {
             SmartDashboard.putNumber(name, def);
         }
     }
-
 
 }

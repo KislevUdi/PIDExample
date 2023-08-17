@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Chassis;
 import static frc.robot.Constants.ChassisConstants.*;
 
-
 public class VelocityPIDCommand extends CommandBase {
     Chassis chassis;
 
@@ -25,5 +24,5 @@ public class VelocityPIDCommand extends CommandBase {
     public void end(boolean interrupted) {
         chassis.stop();
     }
-    
+
 }
