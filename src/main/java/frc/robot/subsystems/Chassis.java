@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -10,15 +9,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.ChassisConstants.*;
 
-import java.util.ArrayList;
-
 import frc.robot.RobotContainer;
+import frc.robot.Util.TalonFXGroup;
 
 public class Chassis extends SubsystemBase {
 
-    TalonFX left; // shortcut for leftMotors[0]
-    TalonFX right;
-    ArrayList<TalonFX> motors = new ArrayList<>(4);
+    TalonFXGroup left; 
+    TalonFXGroup right;
     boolean brake;
     RobotContainer container; // for future use
 
@@ -28,34 +25,27 @@ public class Chassis extends SubsystemBase {
         left = initMotors(LeftFrontMotor, LeftBackMotor, LeftInverted);
         right = initMotors(RightFrontMotor, RightBackMotor, RightInverted);
         setCoast();
+        setPID(VelocityKP, VelocityKI, VelocityKD);
         SmartDashboard.putData("Chassis", this);
     }
 
     // Init motors for one side
-    private TalonFX initMotors(int main, int follower, boolean invert) {
-        TalonFX m = new TalonFX(main);
-        TalonFX f = new TalonFX(follower);
-        motors.add(m);
-        motors.add(f);
+    private TalonFXGroup initMotors(int main, int follower, boolean invert) {
+        TalonFXGroup m = new TalonFXGroup(main, follower);
         m.setInverted(invert);
-        f.setInverted(invert);
-        f.follow(m);
-        setPID(m, VelocityKP, VelocityKI, VelocityKD);
         return m;
     }
 
     public void setBrake() {
         brake = true;
-        for (TalonFX motor : motors) {
-            motor.setNeutralMode(NeutralMode.Brake);
-        }
+        left.setNeutralMode(NeutralMode.Brake);
+        right.setNeutralMode(NeutralMode.Brake);
     }
 
     public void setCoast() {
         brake = false;
-        for (TalonFX motor : motors) {
-            motor.setNeutralMode(NeutralMode.Coast);
-        }
+        left.setNeutralMode(NeutralMode.Coast);
+        right.setNeutralMode(NeutralMode.Coast);
     }
 
     public void setPower(double l, double r) {
@@ -79,15 +69,12 @@ public class Chassis extends SubsystemBase {
         setPower(0, 0);
     }
 
-    private void setPID(TalonFX motor, double kp, double ki, double kd) {
-        motor.config_kP(0, kp);
-        motor.config_kI(0, ki);
-        motor.config_kD(0, kd);
+    private void setPID(double kp, double ki, double kd) {
+        setPIDF(kp, ki, kd, 0);
     }
-
-    public void setPID(double kp, double ki, double kd) {
-        setPID(left, kp, ki, kd);
-        setPID(right, kp, ki, kd);
+    private void setPIDF(double kp, double ki, double kd, double kf) {
+        left.configPIDF(kp, ki, kd, kf);
+        right.configPIDF(kp, ki, kd, kf);
     }
 
     public void setPID() { // read PID from network table

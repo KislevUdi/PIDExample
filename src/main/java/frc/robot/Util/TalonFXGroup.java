@@ -33,5 +33,12 @@ public class TalonFXGroup extends TalonFX {
             t.setNeutralMode(neutralMode);
         }
     }
-    
+
+    public void configPIDF(double kp, double ki, double kd, double kf) {
+        config_kP(0, kp);
+        config_kI(0, ki);
+        config_kD(0, kd);
+        config_kF(0, kf);
+    }
+
 }
