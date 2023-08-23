@@ -29,6 +29,7 @@ public final class Constants {
     public static final int RightBackMotor = 4;
     public static final boolean LeftInverted = true;
     public static final boolean RightInverted = false;
+    public static final int GyroID = 14;
 
     public static final double WheelCircumference = 6 * 0.0254 * Math.PI; 
     public static final double GearRatio = 12;

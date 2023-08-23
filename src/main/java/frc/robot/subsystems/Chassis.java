@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
@@ -22,6 +23,7 @@ public class Chassis extends SubsystemBase {
     TalonFXGroup right;
     boolean brake;
     DifferentialDriveFeedforward ff;
+    PigeonIMU gyro;
     RobotContainer container; // for future use
 
     public Chassis(RobotContainer container) {
@@ -31,6 +33,8 @@ public class Chassis extends SubsystemBase {
         right = initMotors(RightFrontMotor, RightBackMotor, RightInverted);
         setCoast();
         setPID(VelocityKP, VelocityKI, VelocityKD);
+        gyro = new PigeonIMU(GyroID);
+        gyro.setFusedHeading(0);
         ff = new DifferentialDriveFeedforward(VelocityKV, VelocityKV, VelocityKVA, VelocityKAA, TrackWidth);
         SmartDashboard.putData("Chassis", this);
     }
@@ -95,6 +99,10 @@ public class Chassis extends SubsystemBase {
     }
 
     // get functions
+
+    public double heading() {
+        return gyro.getFusedHeading();
+    }
     public double getLeftDistance() {
         return left.getSelectedSensorPosition() / PulsePerMeter;
     }
@@ -140,6 +148,7 @@ public class Chassis extends SubsystemBase {
         builder.addDoubleProperty("Left Velocity", this::getLeftVelocity, null);
         builder.addDoubleProperty("Right Velocity", this::getRightVelocity, null);
         builder.addDoubleProperty("Velocity", this::getLeftVelocity, null);
+        builder.addDoubleProperty("Heading", this::heading, null);
         builder.addBooleanProperty("Brake", this::brakeMode, null);
         SmartDashboard.putNumber("Velocity KP", VelocityKP);
         SmartDashboard.putNumber("Velocity KD", VelocityKD);
