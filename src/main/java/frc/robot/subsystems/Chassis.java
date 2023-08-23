@@ -1,14 +1,18 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
+import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.ChassisConstants.*;
 
+import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.Util.TalonFXGroup;
 
@@ -17,6 +21,7 @@ public class Chassis extends SubsystemBase {
     TalonFXGroup left; 
     TalonFXGroup right;
     boolean brake;
+    DifferentialDriveFeedforward ff;
     RobotContainer container; // for future use
 
     public Chassis(RobotContainer container) {
@@ -26,6 +31,7 @@ public class Chassis extends SubsystemBase {
         right = initMotors(RightFrontMotor, RightBackMotor, RightInverted);
         setCoast();
         setPID(VelocityKP, VelocityKI, VelocityKD);
+        ff = new DifferentialDriveFeedforward(VelocityKV, VelocityKV, VelocityKVA, VelocityKAA, TrackWidth);
         SmartDashboard.putData("Chassis", this);
     }
 
@@ -57,8 +63,13 @@ public class Chassis extends SubsystemBase {
         // input in meter per seconds
         left.setIntegralAccumulator(0);
         right.setIntegralAccumulator(0);
-        left.set(ControlMode.Velocity, VelocityToTalonVelocity(l));
-        right.set(ControlMode.Velocity, VelocityToTalonVelocity(r));
+        DifferentialDriveWheelVoltages volts = ff.calculate(getLeftVelocity(), l, getRightVelocity(), r, Constants.CycleTime);
+        double lff = volts.left+VelocityKS*Math.signum(l);
+        double rff = volts.right+VelocityKS*Math.signum(r);
+        SmartDashboard.putNumber("Left Feed Forward", lff);
+        SmartDashboard.putNumber("Right Feed Forward", rff);
+        left.set(ControlMode.Velocity, VelocityToTalonVelocity(l), DemandType.ArbitraryFeedForward, lff);
+        right.set(ControlMode.Velocity, VelocityToTalonVelocity(r),DemandType.ArbitraryFeedForward, rff);
     }
 
     public void setVelocity(double v) {

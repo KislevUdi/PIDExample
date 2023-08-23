@@ -12,9 +12,7 @@ public class TalonFXGroup extends TalonFX {
         followers = new TalonFX[id.length - 1];
         for(int i = 1; i < id.length; i++) {
             followers[i-1] = new TalonFX(id[i]);
-        }
-        for(TalonFX t: followers) {
-            t.follow(this);
+            followers[i-1].follow(this);
         }
     }
 

@@ -47,6 +47,10 @@ public final class Constants {
     public static final double VelocityKS = 0.07;
     public static final double VelocityKV = 0.2;
     public static final double VelocityKA = 0.06;
+    public static final double VelocityKVA = 0.2;
+    public static final double VelocityKAA = 0.06;
+
+    public static final double TrackWidth = 0.57;
 
   }
 
