@@ -7,7 +7,14 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,6 +31,11 @@ public class Chassis extends SubsystemBase {
     boolean brake;
     DifferentialDriveFeedforward ff;
     PigeonIMU gyro;
+    DifferentialDriveKinematics kinematics;
+    DifferentialDrivePoseEstimator poseEstimator;
+    Pose2d pose;
+    Field2d fieldPosition;
+
     RobotContainer container; // for future use
 
     public Chassis(RobotContainer container) {
@@ -36,6 +48,11 @@ public class Chassis extends SubsystemBase {
         gyro = new PigeonIMU(GyroID);
         gyro.setFusedHeading(0);
         ff = new DifferentialDriveFeedforward(VelocityKV, VelocityKV, VelocityKVA, VelocityKAA, TrackWidth);
+        kinematics = new DifferentialDriveKinematics(TrackWidth);
+        pose = new Pose2d(0,0,getGyroAngle());
+        fieldPosition = new Field2d();
+        fieldPosition.setRobotPose(pose);
+        poseEstimator = new DifferentialDrivePoseEstimator(kinematics, getGyroAngle(), getLeftDistance(), getRightDistance(), pose);
         SmartDashboard.putData("Chassis", this);
     }
 
@@ -65,8 +82,8 @@ public class Chassis extends SubsystemBase {
 
     public void setVelocity(double l, double r) {
         // input in meter per seconds
-        left.setIntegralAccumulator(0);
-        right.setIntegralAccumulator(0);
+        //left.setIntegralAccumulator(0);
+        //right.setIntegralAccumulator(0);
         DifferentialDriveWheelVoltages volts = ff.calculate(getLeftVelocity(), l, getRightVelocity(), r, Constants.CycleTime);
         double lff = volts.left+VelocityKS*Math.signum(l);
         double rff = volts.right+VelocityKS*Math.signum(r);
@@ -74,6 +91,13 @@ public class Chassis extends SubsystemBase {
         SmartDashboard.putNumber("Right Feed Forward", rff);
         left.set(ControlMode.Velocity, VelocityToTalonVelocity(l), DemandType.ArbitraryFeedForward, lff);
         right.set(ControlMode.Velocity, VelocityToTalonVelocity(r),DemandType.ArbitraryFeedForward, rff);
+    }
+
+    public void setVelocity(DifferentialDriveWheelSpeeds speeds) {
+        setVelocity(speeds.leftMetersPerSecond,speeds.rightMetersPerSecond);
+    }
+    public void setVelocity(ChassisSpeeds speed) {
+        setVelocity(kinematics.toWheelSpeeds(speed));
     }
 
     public void setVelocity(double v) {
@@ -98,10 +122,17 @@ public class Chassis extends SubsystemBase {
                 SmartDashboard.getNumber("Velocity KD", VelocityKD));
     }
 
+    public void setPosition(double x, double y, double angle) {
+        poseEstimator.resetPosition(getGyroAngle(), getLeftDistance(), getRightDistance(), new Pose2d(x, y, Rotation2d.fromDegrees(angle)));
+    }
+
     // get functions
 
+    public Rotation2d getGyroAngle() {
+        return Rotation2d.fromDegrees(gyro.getFusedHeading());
+    }
     public double heading() {
-        return gyro.getFusedHeading();
+        return pose.getRotation().getDegrees();
     }
     public double getLeftDistance() {
         return left.getSelectedSensorPosition() / PulsePerMeter;
@@ -139,6 +170,14 @@ public class Chassis extends SubsystemBase {
         return right.getMotorOutputPercent();
     }
 
+    public Pose2d getPose() {
+        return pose;
+    }
+
+    public DifferentialDriveKinematics kinematics() {
+        return kinematics;
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
@@ -153,8 +192,16 @@ public class Chassis extends SubsystemBase {
         SmartDashboard.putNumber("Velocity KP", VelocityKP);
         SmartDashboard.putNumber("Velocity KD", VelocityKD);
         SmartDashboard.putNumber("Velocity KI", VelocityKI);
+        SmartDashboard.putNumber("Set X position", 0);
+        SmartDashboard.putNumber("Set Y position", 0);
+        SmartDashboard.putNumber("Set Angle position", 0);
         SmartDashboard.putData("Brake", new InstantCommand(() -> setBrake(), this).ignoringDisable(true));
         SmartDashboard.putData("Coast", new InstantCommand(() -> setCoast(), this).ignoringDisable(true));
+        SmartDashboard.putData("Coast", new InstantCommand(() -> setPosition(
+        SmartDashboard.getNumber("Set X position", 0),
+        SmartDashboard.getNumber("Set Y position", 0),
+        SmartDashboard.getNumber("Set Angle position", 0)), this).ignoringDisable(true));
+        SmartDashboard.putData("Positin",fieldPosition);
         addNTField(AutoVelocityID, 1);
     }
 
@@ -172,6 +219,14 @@ public class Chassis extends SubsystemBase {
         if (SmartDashboard.getNumber(name, -1) == -1) {
             SmartDashboard.putNumber(name, def);
         }
+    }
+
+    @Override
+    public void periodic() {
+        super.periodic();
+        poseEstimator.update(getGyroAngle(),getLeftDistance(), getRightDistance());
+        pose = poseEstimator.getEstimatedPosition();
+        fieldPosition.setRobotPose(pose);
     }
 
 }
