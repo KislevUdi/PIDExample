@@ -36,7 +36,7 @@ public class DistanceTrapezoid {
     }
 
     private double cycleDistanceWithAccel(double currentVelocity) {
-        return currentVelocity * Constants.CycleTime - accelDist;
+        return currentVelocity * Constants.CycleTime + accelDist;
     }
     private double cycleDistanceNoAccel(double currentVelocity) {
         return currentVelocity * Constants.CycleTime;
@@ -44,7 +44,7 @@ public class DistanceTrapezoid {
 
     private double distanceToVel(double currentVel, double tgtVel, double accel) {
         double deltaVel = currentVel - tgtVel;
-        return (currentVel + deltaVel/2)*deltaVel/accel;
+        return (currentVel - deltaVel/2)*deltaVel/accel;
     }
 
 }

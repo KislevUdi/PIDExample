@@ -198,9 +198,9 @@ public class Chassis extends SubsystemBase {
         SmartDashboard.putData("Brake", new InstantCommand(() -> setBrake(), this).ignoringDisable(true));
         SmartDashboard.putData("Coast", new InstantCommand(() -> setCoast(), this).ignoringDisable(true));
         SmartDashboard.putData("Coast", new InstantCommand(() -> setPosition(
-        SmartDashboard.getNumber("Set X position", 0),
-        SmartDashboard.getNumber("Set Y position", 0),
-        SmartDashboard.getNumber("Set Angle position", 0)), this).ignoringDisable(true));
+            SmartDashboard.getNumber("Set X position", 0),
+            SmartDashboard.getNumber("Set Y position", 0),
+            SmartDashboard.getNumber("Set Angle position", 0)), this).ignoringDisable(true));
         SmartDashboard.putData("Positin",fieldPosition);
         addNTField(AutoVelocityID, 1);
     }
