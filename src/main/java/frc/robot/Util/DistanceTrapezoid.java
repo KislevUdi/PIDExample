@@ -26,16 +26,16 @@ public class DistanceTrapezoid {
         if(remainingDistance < 0) {
             return  -calculate(-remainingDistance, -curentVelocity, -tgtVelocity);
         }
-        if(curentVelocity < maxVelocity && distanceToVel(curentVelocity+deltaV, tgtVelocity, maxAcceleration) > remainingDistance - cycleDistanceWithAccel(curentVelocity)) {
+        if(curentVelocity < maxVelocity && distanceToVel(curentVelocity+deltaV, tgtVelocity, maxAcceleration) < remainingDistance - cycleDistanceWithAccel(curentVelocity)) {
             // can accelerate - velocity not at max and remaining distance allow deacceleration
             return Math.min(curentVelocity + deltaV, maxVelocity);
 
-        } else if(distanceToVel(curentVelocity, tgtVelocity, maxAcceleration) > remainingDistance - cycleDistanceNoAccel(curentVelocity)) {
+        } else if(distanceToVel(curentVelocity, tgtVelocity, maxAcceleration) < remainingDistance - cycleDistanceNoAccel(curentVelocity)) {
             // mainintining velocity
             return curentVelocity;
         } else {
             // deccelerate
-            return curentVelocity - deltaV;
+            return Math.max(curentVelocity - deltaV,tgtVelocity);
         }
         
     }
