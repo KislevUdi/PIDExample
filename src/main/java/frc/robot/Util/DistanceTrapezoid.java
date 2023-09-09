@@ -4,6 +4,8 @@ import frc.robot.Constants;
 
 /*
  * Calculate required velocity based on remaining distance current velocity and target velocity
+ * velocities are positive
+ * if backward required - calculate for forward and use -velocity
  */
 public class DistanceTrapezoid {
 
@@ -21,6 +23,9 @@ public class DistanceTrapezoid {
     }
 
     public double calculate(double remainingDistance, double curentVelocity, double tgtVelocity) {
+        if(remainingDistance < 0) {
+            return  -calculate(-remainingDistance, -curentVelocity, -tgtVelocity);
+        }
         if(curentVelocity < maxVelocity && distanceToVel(curentVelocity+deltaV, tgtVelocity, maxAcceleration) > remainingDistance - cycleDistanceWithAccel(curentVelocity)) {
             // can accelerate - velocity not at max and remaining distance allow deacceleration
             return Math.min(curentVelocity + deltaV, maxVelocity);

@@ -10,6 +10,7 @@ public class DistVelDirExerciseCommand extends CommandBase {
     private Chassis chassis;
     DistanceTrapezoid trapezoid;
     private double distance;
+    private double direction;
     private double heading = 0;
     private double startDistance = 0;
     private double remainingDistance = 0;
@@ -20,6 +21,7 @@ public class DistVelDirExerciseCommand extends CommandBase {
         super();
         this.chassis = chassis;
         this.distance = distance;
+        direction = Math.signum(distance);
         trapezoid = new DistanceTrapezoid(velocity, maxAcceleration);
         addRequirements(chassis);
     }
@@ -35,9 +37,13 @@ public class DistVelDirExerciseCommand extends CommandBase {
     public void execute() {
         double curentVelocity = chassis.getVelocity();
         double headingError = chassis.heading() - heading;
-        remainingDistance = distance + startDistance - chassis.getDistance();
-        double tgtVel = trapezoid.calculate(remainingDistance, curentVelocity, 0);
+        remainingDistance = remainingDistance();
+        double tgtVel = trapezoid.calculate(remainingDistance, curentVelocity, 0) * direction;
         chassis.setVelocity(tgtVel + headingError * headingKP, tgtVel - headingError * headingKP);
+    }
+
+    private double remainingDistance() {
+        return direction*(distance + startDistance - chassis.getDistance());
     }
 
     @Override

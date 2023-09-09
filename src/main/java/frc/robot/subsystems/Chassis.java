@@ -22,6 +22,7 @@ import static frc.robot.Constants.ChassisConstants.*;
 
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.Util.PoseEstimator;
 import frc.robot.Util.TalonFXGroup;
 
 public class Chassis extends SubsystemBase {
@@ -32,7 +33,7 @@ public class Chassis extends SubsystemBase {
     DifferentialDriveFeedforward ff;
     PigeonIMU gyro;
     DifferentialDriveKinematics kinematics;
-    DifferentialDrivePoseEstimator poseEstimator;
+    PoseEstimator poseEstimator;
     Pose2d pose;
     Field2d fieldPosition;
 
@@ -52,7 +53,7 @@ public class Chassis extends SubsystemBase {
         pose = new Pose2d(0,0,getGyroAngle());
         fieldPosition = new Field2d();
         fieldPosition.setRobotPose(pose);
-        poseEstimator = new DifferentialDrivePoseEstimator(kinematics, getGyroAngle(), getLeftDistance(), getRightDistance(), pose);
+        poseEstimator = new PoseEstimator(kinematics, getGyroAngle(), getLeftDistance(), getRightDistance(), pose);
         SmartDashboard.putData("Chassis", this);
     }
 
@@ -126,6 +127,13 @@ public class Chassis extends SubsystemBase {
         poseEstimator.resetPosition(getGyroAngle(), getLeftDistance(), getRightDistance(), new Pose2d(x, y, Rotation2d.fromDegrees(angle)));
     }
 
+    public void setVisionPosition(Pose2d pose, double dealy) {
+        
+        poseEstimator.addVisionMeasurement(pose, dealy);
+    }
+
+    
+
     // get functions
 
     public Rotation2d getGyroAngle() {
@@ -174,8 +182,18 @@ public class Chassis extends SubsystemBase {
         return pose;
     }
 
+    public double getRotationRate() {
+        double[] rates = new double[3]; // x,y,z rates
+        gyro.getRawGyro(rates);
+        return rates[2]; // z
+    }
+
     public DifferentialDriveKinematics kinematics() {
         return kinematics;
+    }
+
+    public PoseEstimator poseEstimator() {
+        return poseEstimator;
     }
 
     @Override
