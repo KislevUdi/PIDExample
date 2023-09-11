@@ -19,13 +19,13 @@ public class DriveToPositionWithAngle extends CommandBase {
     double angleError;
     boolean inInitialTurn = true;
     DistanceTrapezoid trapeziod;
-    DistanceTrapezoid angleTrapezoid = new DistanceTrapezoid(Math.toRadians(90), Math.toRadians(90));
+    DistanceTrapezoid angleTrapezoid = new DistanceTrapezoid(Math.toRadians(90), Math.toRadians(90),Math.toRadians(5));
 
     public DriveToPositionWithAngle(Pose2d pose, double maxVelcotiy, double maxAccelration, Chassis chassis) {
         super();
         tgtPose = new Pose2d(pose.getTranslation(),pose.getRotation()); // copy so data will not change
         this.chassis = chassis;
-        trapeziod = new DistanceTrapezoid(maxVelcotiy, maxAccelration);
+        trapeziod = new DistanceTrapezoid(maxVelcotiy, maxAccelration, 0.1);
         addRequirements(chassis);
     }
 

@@ -19,7 +19,7 @@ public class DriveToPosition extends CommandBase {
         super();
         tgtPose = new Pose2d(pose.getTranslation(),pose.getRotation()); // copy so data will not change
         this.chassis = chassis;
-        trapeziod = new DistanceTrapezoid(maxVelcotiy, maxAccelration);
+        trapeziod = new DistanceTrapezoid(maxVelcotiy, maxAccelration, 0.01);
         addRequirements(chassis);
     }
 

@@ -22,7 +22,7 @@ public class DistVelDirExerciseCommand extends CommandBase {
         this.chassis = chassis;
         this.distance = distance;
         direction = Math.signum(distance);
-        trapezoid = new DistanceTrapezoid(velocity, maxAcceleration);
+        trapezoid = new DistanceTrapezoid(velocity, maxAcceleration,0.1);
         addRequirements(chassis);
     }
 

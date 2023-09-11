@@ -1,5 +1,6 @@
 package frc.robot.Util;
 
+import edu.wpi.first.math.MathSharedStore;
 import frc.robot.Constants;
 
 /*
@@ -11,33 +12,54 @@ public class DistanceTrapezoid {
 
     double maxVelocity;
     double maxAcceleration;
+    double minVelocity;
     private double accelDist; // 1/2 * a * t * t
     private double deltaV; // max velocity change in 1 cycle at max acceleration
-
-    public DistanceTrapezoid(double maxVelocity, double maxAcceleration) {
+    private double lastTime = 0;
+    private double lastVelocity = 0;
+    private double lastAccel = 0;
+    
+    public DistanceTrapezoid(double maxVelocity, double maxAcceleration, double minVelocity) {
         this.maxAcceleration = maxAcceleration;
         this.maxVelocity = maxVelocity;
+        this.minVelocity = minVelocity;
         deltaV = maxAcceleration * Constants.CycleTime;
         accelDist = maxAcceleration * Constants.CycleTime * Constants.CycleTime / 2;
 
+    }
+
+    public double time() {
+        return MathSharedStore.getTimestamp();
     }
 
     public double calculate(double remainingDistance, double curentVelocity, double tgtVelocity) {
         if(remainingDistance < 0) {
             return  -calculate(-remainingDistance, -curentVelocity, -tgtVelocity);
         }
+        double time = time();
+        // use last/max velocity if we didn't reach target required velocity
+        if(time - lastTime < 2 * Constants.CycleTime) { // last data is valid
+            if(curentVelocity < lastVelocity && lastAccel > 0) { // we are too slow while accelerating - use last velocity that will increase accel
+                curentVelocity = lastVelocity;
+            } else if(curentVelocity > lastVelocity && lastAccel < 0) { // we are to fast while deaccelerating - use last velocity to increase deacceleration
+                curentVelocity = lastVelocity;
+            }
+        }
         if(curentVelocity < maxVelocity && distanceToVel(curentVelocity+deltaV, tgtVelocity, maxAcceleration) < remainingDistance - cycleDistanceWithAccel(curentVelocity)) {
             // can accelerate - velocity not at max and remaining distance allow deacceleration
-            return Math.min(curentVelocity + deltaV, maxVelocity);
-
+            lastAccel = Math.min(deltaV,maxVelocity - curentVelocity);
         } else if(distanceToVel(curentVelocity, tgtVelocity, maxAcceleration) < remainingDistance - cycleDistanceNoAccel(curentVelocity)) {
             // mainintining velocity
-            return curentVelocity;
+            lastAccel = 0;
         } else {
-            // deccelerate
-            return Math.max(curentVelocity - deltaV,tgtVelocity);
+            lastAccel = Math.max(-deltaV, tgtVelocity - curentVelocity);
         }
-        
+        lastVelocity = curentVelocity + lastAccel;
+        if(lastVelocity < minVelocity && lastVelocity > 0) {
+            lastVelocity = minVelocity;
+        }
+        lastTime = time;
+        return lastVelocity;
     }
 
     private double cycleDistanceWithAccel(double currentVelocity) {
