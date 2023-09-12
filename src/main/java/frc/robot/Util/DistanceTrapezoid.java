@@ -45,6 +45,7 @@ public class DistanceTrapezoid {
                 curentVelocity = lastVelocity;
             }
         }
+        // calculate accel for next cycle
         if(curentVelocity < maxVelocity && distanceToVel(curentVelocity+deltaV, tgtVelocity, maxAcceleration) < remainingDistance - cycleDistanceWithAccel(curentVelocity)) {
             // can accelerate - velocity not at max and remaining distance allow deacceleration
             lastAccel = Math.min(deltaV,maxVelocity - curentVelocity);
@@ -54,8 +55,12 @@ public class DistanceTrapezoid {
         } else {
             lastAccel = Math.max(-deltaV, tgtVelocity - curentVelocity);
         }
+        // set the velocity 
         lastVelocity = curentVelocity + lastAccel;
-        if(lastVelocity < minVelocity && lastVelocity > 0) {
+        if(lastVelocity > maxVelocity) {
+            lastVelocity = maxVelocity;
+        }
+        if(lastVelocity < minVelocity && lastVelocity > 0  && lastAccel >= 0) {
             lastVelocity = minVelocity;
         }
         lastTime = time;

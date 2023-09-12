@@ -49,6 +49,7 @@ public class VisionFilter {
     PoseEstimator poseEstimator;
     VisionData[] buf = new VisionData[3];
     int lastData = -1;
+    double lastUpdateTime;
 
     int next() {
         return (lastData+1)%buf.length;
@@ -66,15 +67,18 @@ public class VisionFilter {
     }
 
     public void update(Pose2d pose, double latency) {
-        VisionData d = new VisionData(pose, getTime()-latency);
+        double time = getTime();
         lastData = next();
-        buf[lastData] = d;
-        VisionData v = median();
-        if(v != null && v.pose != null) {
-            poseEstimator.addVisionMeasurement(v.pose, getTime()-v.timeStamp);
-            double time = v.timeStamp;
-            for(VisionData vd : buf) {
-                vd.recalc(time);
+        buf[lastData] = new VisionData(pose, time-latency);
+        if(validBuf(time)) {
+            VisionData v = median();
+            if(v != null && v.pose != null) {
+                poseEstimator.addVisionMeasurement(v.pose, getTime()-v.timeStamp);
+                lastUpdateTime = time;
+                time = v.timeStamp;
+                for(VisionData vd : buf) {
+                    vd.recalc(time);
+                }
             }
         }
     }
@@ -86,11 +90,29 @@ public class VisionFilter {
         }
     };
 
+    private boolean validBuf(double time) {
+        double minTime = time - 1.2;
+        for(VisionData v : buf) {
+            if(v.timeStamp < minTime) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private VisionData median() {
         // create array of Visions
         VisionData[] v = new VisionData[buf.length];
         v = buf.clone();
         Arrays.sort(v,comperator);
         return v[buf.length/2];
+    }
+
+    public double lastUpdateLatency() {
+        return getTime() - lastUpdateTime;
+    }
+
+    public boolean validVisionPosition() {
+        return lastUpdateLatency() < 1;
     }
 }
