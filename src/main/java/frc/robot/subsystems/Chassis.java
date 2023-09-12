@@ -131,7 +131,6 @@ public class Chassis extends SubsystemBase {
     }
 
     public void setVisionPosition(Pose2d pose, double dealy) {
-        
         poseEstimator.addVisionMeasurement(pose, dealy);
     }
 
@@ -199,6 +198,15 @@ public class Chassis extends SubsystemBase {
         return poseEstimator;
     }
 
+    public double visionLatency() {
+        return visionFilter.lastUpdateLatency();
+    }
+
+    public boolean visionValid() {
+        return visionFilter.validVisionPosition();
+    }
+
+
     @Override
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
@@ -209,7 +217,9 @@ public class Chassis extends SubsystemBase {
         builder.addDoubleProperty("Right Velocity", this::getRightVelocity, null);
         builder.addDoubleProperty("Velocity", this::getLeftVelocity, null);
         builder.addDoubleProperty("Heading", this::heading, null);
-        builder.addBooleanProperty("Brake", this::brakeMode, null);
+        builder.addDoubleProperty("Vision Latency", this::visionLatency, null);
+        builder.addBooleanProperty("Brake/Coast", this::brakeMode, null);
+        builder.addBooleanProperty("Vision Valid", this::visionValid, null);
         SmartDashboard.putNumber("Velocity KP", VelocityKP);
         SmartDashboard.putNumber("Velocity KD", VelocityKD);
         SmartDashboard.putNumber("Velocity KI", VelocityKI);
@@ -218,7 +228,7 @@ public class Chassis extends SubsystemBase {
         SmartDashboard.putNumber("Set Angle position", 0);
         SmartDashboard.putData("Brake", new InstantCommand(() -> setBrake(), this).ignoringDisable(true));
         SmartDashboard.putData("Coast", new InstantCommand(() -> setCoast(), this).ignoringDisable(true));
-        SmartDashboard.putData("Coast", new InstantCommand(() -> setPosition(
+        SmartDashboard.putData("Set Position", new InstantCommand(() -> setPosition(
             SmartDashboard.getNumber("Set X position", 0),
             SmartDashboard.getNumber("Set Y position", 0),
             SmartDashboard.getNumber("Set Angle position", 0)), this).ignoringDisable(true));
