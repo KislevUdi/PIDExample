@@ -7,6 +7,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -23,6 +24,7 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.Util.PoseEstimator;
 import frc.robot.Util.TalonFXGroup;
+import frc.robot.Util.VisionFilter;
 
 public class Chassis extends SubsystemBase {
 
@@ -35,6 +37,7 @@ public class Chassis extends SubsystemBase {
     PoseEstimator poseEstimator;
     Pose2d pose;
     Field2d fieldPosition;
+    VisionFilter visionFilter;
 
     RobotContainer container; // for future use
 
@@ -53,6 +56,7 @@ public class Chassis extends SubsystemBase {
         fieldPosition = new Field2d();
         fieldPosition.setRobotPose(pose);
         poseEstimator = new PoseEstimator(kinematics, getGyroAngle(), getLeftDistance(), getRightDistance(), pose);
+        visionFilter = new VisionFilter(this, poseEstimator);
         SmartDashboard.putData("Chassis", this);
     }
 

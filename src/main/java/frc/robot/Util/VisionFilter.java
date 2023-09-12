@@ -5,8 +5,12 @@ import java.util.Comparator;
 
 import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.geometry.Pose2d;
+import frc.robot.subsystems.Chassis;
 
 public class VisionFilter {
+
+    public static final double MaxValidVelcity = 2.0; // m/s - ignoring vision data abve this velocity
+    public static final double MaxHeadingDiff = 10.0; // degrees - ignoring vision data if vision heading is off by more than this value
 
     class VisionData {
         Pose2d pose;
@@ -32,7 +36,7 @@ public class VisionFilter {
 
         void setOffset() {
             Pose2d pp = poseEstimator.getSample(timeStamp);
-            if(pp != null) {
+            if(pp != null && Math.abs(pp.getRotation().minus(pose.getRotation()).getDegrees()) < MaxHeadingDiff) {
                 offset = pp.getTranslation().getDistance(pose.getTranslation());
             } else {
                 clear();
@@ -47,6 +51,7 @@ public class VisionFilter {
     }
 
     PoseEstimator poseEstimator;
+    Chassis chassis;
     VisionData[] buf = new VisionData[3];
     int lastData = -1;
     double lastUpdateTime;
@@ -55,7 +60,8 @@ public class VisionFilter {
         return (lastData+1)%buf.length;
     }
 
-    public VisionFilter(PoseEstimator estimator) {
+    public VisionFilter(Chassis chassis, PoseEstimator estimator) {
+        this.chassis = chassis;
         poseEstimator = estimator;
         for(int i = 0; i < buf.length; i++) {
             buf[i] = new VisionData(null, 0);
@@ -67,6 +73,9 @@ public class VisionFilter {
     }
 
     public void update(Pose2d pose, double latency) {
+        if(chassis.getVelocity() > MaxValidVelcity ) {
+            return;
+        }
         double time = getTime();
         lastData = next();
         buf[lastData] = new VisionData(pose, time-latency);
