@@ -5,9 +5,7 @@ import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -22,6 +20,7 @@ import static frc.robot.Constants.ChassisConstants.*;
 
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.Util.ExtendedDifferentialDriveFeedForward;
 import frc.robot.Util.PoseEstimator;
 import frc.robot.Util.TalonFXGroup;
 import frc.robot.Util.VisionFilter;
@@ -31,7 +30,7 @@ public class Chassis extends SubsystemBase {
     TalonFXGroup left; 
     TalonFXGroup right;
     boolean brake;
-    DifferentialDriveFeedforward ff;
+    ExtendedDifferentialDriveFeedForward ff;
     PigeonIMU gyro;
     DifferentialDriveKinematics kinematics;
     PoseEstimator poseEstimator;
@@ -50,7 +49,7 @@ public class Chassis extends SubsystemBase {
         setPID(VelocityKP, VelocityKI, VelocityKD);
         gyro = new PigeonIMU(GyroID);
         gyro.setFusedHeading(0);
-        ff = new DifferentialDriveFeedforward(VelocityKV, VelocityKV, VelocityKVA, VelocityKAA, TrackWidth);
+        ff = new ExtendedDifferentialDriveFeedForward(VelocityKS, VelocityKV, VelocityKV, VelocityKVA, VelocityKAA, VelocityMinPower, TrackWidth);
         kinematics = new DifferentialDriveKinematics(TrackWidth);
         pose = new Pose2d(0,0,getGyroAngle());
         fieldPosition = new Field2d();
@@ -86,15 +85,11 @@ public class Chassis extends SubsystemBase {
 
     public void setVelocity(double l, double r) {
         // input in meter per seconds
-        //left.setIntegralAccumulator(0);
-        //right.setIntegralAccumulator(0);
-        DifferentialDriveWheelVoltages volts = ff.calculate(getLeftVelocity(), l, getRightVelocity(), r, Constants.CycleTime);
-        double lff = volts.left+VelocityKS*Math.signum(l);
-        double rff = volts.right+VelocityKS*Math.signum(r);
-        SmartDashboard.putNumber("Left Feed Forward", lff);
-        SmartDashboard.putNumber("Right Feed Forward", rff);
-        left.set(ControlMode.Velocity, VelocityToTalonVelocity(l), DemandType.ArbitraryFeedForward, lff);
-        right.set(ControlMode.Velocity, VelocityToTalonVelocity(r),DemandType.ArbitraryFeedForward, rff);
+        DifferentialDriveWheelVoltages power = ff.calculate(getLeftVelocity(), l, getRightVelocity(), r, Constants.CycleTime);
+        SmartDashboard.putNumber("Left Feed Forward", power.left);
+        SmartDashboard.putNumber("Right Feed Forward", power.right);
+        left.set(ControlMode.Velocity, VelocityToTalonVelocity(l), DemandType.ArbitraryFeedForward, power.left);
+        right.set(ControlMode.Velocity, VelocityToTalonVelocity(r),DemandType.ArbitraryFeedForward, power.right);
     }
 
     public void setVelocity(DifferentialDriveWheelSpeeds speeds) {

@@ -45,11 +45,12 @@ public final class Constants {
     public static final double MaxVelocity = 2.1;
     public static final double MaxAcceleration = 4.0;
 
-    public static final double VelocityKS = 0.07;
-    public static final double VelocityKV = 0.2;
-    public static final double VelocityKA = 0.06;
-    public static final double VelocityKVA = 0.2;
-    public static final double VelocityKAA = 0.06;
+    public static final double VelocityKS = 0.3/12;
+    public static final double VelocityKV = 2.84/12;
+    public static final double VelocityKA = 0.12/12;
+    public static final double VelocityKVA = 2.88/12;
+    public static final double VelocityKAA = 0.055/12;
+    public static final double VelocityMinPower = 0.08;
 
     public static final double TrackWidth = 0.57;
 
