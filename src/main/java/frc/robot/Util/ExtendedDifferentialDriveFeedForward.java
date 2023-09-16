@@ -7,7 +7,7 @@ public class ExtendedDifferentialDriveFeedForward extends DifferentialDriveFeedf
 
     private double ks;
     private double minPower;
-    private double zeroVelocity = 0.04;
+    private double zeroVelocity = 0.05;
     public ExtendedDifferentialDriveFeedForward(double ks, double kv, double ka, double kav, double kaa, double minPower, double TrackWidth) {
         super(kv, ka, kav, kaa, TrackWidth);
         this.minPower = minPower;
