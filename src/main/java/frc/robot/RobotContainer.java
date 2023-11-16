@@ -12,7 +12,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public final Chassis chassis;
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
     chassis = new Chassis(this);
     configureBindings();
@@ -27,6 +29,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-      return new VelocityPIDCommand(chassis).withTimeout(3);
+    return new VelocityPIDCommand(chassis).withTimeout(3);
   }
 }
